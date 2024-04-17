@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Board } from './Board';
 import { Button } from './Button';
+import { infoReadyValueType } from '../App';
 
-export const Counter = () => {
-    let [numBoard, setNumBoard] = useState<number>(0);
+type CounterPropsType = {
+    max: string
+    start: string
+    infoReadyValue: infoReadyValueType
+}
 
-    const numBoardMax = numBoard >= 5;
-
-    function fAddCount() {
+export const Counter = (props: CounterPropsType) => {
+    const [numBoard, setNumBoard] = useState<number>(Number(props.start));
+    
+    const numBoardMax = numBoard >= Number(props.max);
+    
+    function fAddCounter() {
         if (numBoardMax) return;
-
-        setNumBoard(++numBoard)
+        
+        setNumBoard(numBoard + 1)
     }
+
+    function fResetCounter() {
+        setNumBoard(Number(props.start))
+    }
+
+    useEffect(() => {
+        setNumBoard(Number(props.start))
+    }, [props.start])
 
     return (
         <div className='block'>
-            <Board num={numBoard} />
+            {props.infoReadyValue.status === 'ok'
+                ? <Board num={numBoard} max={Number(props.max)} />
+                : <div className='block'><span style={{ color: props.infoReadyValue.status === 'error' ? 'crimson' : '' }}>{props.infoReadyValue.value}</span></div>
+            }
 
             <div className='block btn'>
-                <Button title='inc' onClick={() => fAddCount()} disabled={numBoardMax} />
-                <Button title='reset' onClick={() => setNumBoard(0)} disabled={numBoard === 0} />
+                <Button title='inc' onClick={fAddCounter} disabled={numBoardMax || !(props.infoReadyValue.status === 'ok')} />
+                <Button title='reset' onClick={fResetCounter} disabled={numBoard === Number(props.start) || !(props.infoReadyValue.status === 'ok')} />
             </div>
         </div>
     );
