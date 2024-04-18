@@ -1,43 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import { Board } from './Board';
 import { Button } from './Button';
-import { infoReadyValueType } from '../App';
+import { Setting } from './Setting';
 
 type CounterPropsType = {
-    max: string
-    start: string
-    infoReadyValue: infoReadyValueType
 }
 
 export const Counter = (props: CounterPropsType) => {
-    const [numBoard, setNumBoard] = useState<number>(Number(props.start));
-    
-    const numBoardMax = numBoard >= Number(props.max);
-    
+    const [isChangeValue, setIsChangeValue] = useState(false)
+    const [maxValue, setMaxValue] = useState(String(localStorage.getItem('maxValue')));
+    const [startValue, setStartValue] = useState(String(localStorage.getItem('startValue')));
+    const [numBoard, setNumBoard] = useState<number>(Number(startValue));
+
+    const numBoardMax = numBoard >= Number(maxValue);
+
     function fAddCounter() {
         if (numBoardMax) return;
-        
+
         setNumBoard(numBoard + 1)
     }
 
     function fResetCounter() {
-        setNumBoard(Number(props.start))
+        setNumBoard(Number(startValue))
     }
 
     useEffect(() => {
-        setNumBoard(Number(props.start))
-    }, [props.start])
+        setNumBoard(Number(startValue))
+    }, [startValue])
+
+    function fSetMaxValue(value: string) {
+        setMaxValue(value)
+    }
+
+    function fSetStartValue(value: string) {
+        setStartValue(value)
+    }
+
+    const isAprove = Number(maxValue) < 0 || Number(maxValue) <= Number(startValue)
+
+    function fSaveNewValue() {
+        if (isAprove) return
+
+        localStorage.setItem('maxValue', maxValue)
+        localStorage.setItem('startValue', startValue)
+        setIsChangeValue(!isChangeValue)
+    }
 
     return (
         <div className='block'>
-            {props.infoReadyValue.status === 'ok'
-                ? <Board num={numBoard} max={Number(props.max)} />
-                : <div className='block'><span style={{ color: props.infoReadyValue.status === 'error' ? 'crimson' : '' }}>{props.infoReadyValue.value}</span></div>
+            {!isChangeValue
+                ? <Board num={numBoard} max={Number(maxValue)} />
+                : <Setting max={maxValue} start={startValue} setMaxValue={fSetMaxValue} setStartValue={fSetStartValue} isAprove />
             }
 
             <div className='block btn'>
-                <Button title='inc' onClick={fAddCounter} disabled={numBoardMax || !(props.infoReadyValue.status === 'ok')} />
-                <Button title='reset' onClick={fResetCounter} disabled={numBoard === Number(props.start) || !(props.infoReadyValue.status === 'ok')} />
+                {!isChangeValue &&
+                    <>
+                        <Button title='inc' onClick={fAddCounter} disabled={numBoardMax} />
+                        <Button title='reset' onClick={fResetCounter} disabled={numBoard === Number(startValue)} />
+                    </>
+                }
+                <Button title='set' onClick={fSaveNewValue} disabled={isAprove} />
             </div>
         </div>
     );
