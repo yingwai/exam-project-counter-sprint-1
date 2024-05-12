@@ -1,63 +1,57 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Board } from './Board';
 import { Button } from './Button';
 import { Setting } from './Setting';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppRootStateType } from '../state/store';
+import { appendCounterAC, resetCounterAC, setMaxCounterAC, setStartCounterAC } from '../state/counterReducer';
 
-type CounterPropsType = {
-}
-
-export const Counter = (props: CounterPropsType) => {
+export const Counter = () => {    
     const [isChangeValue, setIsChangeValue] = useState(false)
-    const [maxValue, setMaxValue] = useState(String(localStorage.getItem('maxValue')));
-    const [startValue, setStartValue] = useState(String(localStorage.getItem('startValue')));
-    const [numBoard, setNumBoard] = useState<number>(Number(startValue));
 
-    const numBoardMax = numBoard >= Number(maxValue);
+    const {start, max, current} = useSelector((state: AppRootStateType) => state.counter);    
+    const dispatch = useDispatch()
+
+    const numBoardMax = current >= max;
 
     function fAddCounter() {
-        if (numBoardMax) return;
-
-        setNumBoard(numBoard + 1)
+        dispatch(appendCounterAC())
     }
 
     function fResetCounter() {
-        setNumBoard(Number(startValue))
+        dispatch(resetCounterAC())
     }
 
-    useEffect(() => {
-        setNumBoard(Number(startValue))
-    }, [startValue])
-
-    function fSetMaxValue(value: string) {
-        setMaxValue(value)
+    function fSetMaxValue(value: number) {
+        dispatch(setMaxCounterAC(value))
     }
 
-    function fSetStartValue(value: string) {
-        setStartValue(value)
+    function fSetStartValue(value: number) {
+        dispatch(setStartCounterAC(value))
     }
 
-    const isAprove = Number(maxValue) < 0 || Number(maxValue) <= Number(startValue)
+    const isAprove = max < 0 || max <= start;
 
     function fSaveNewValue() {
         if (isAprove) return
 
-        localStorage.setItem('maxValue', maxValue)
-        localStorage.setItem('startValue', startValue)
+        localStorage.setItem('maxValue', JSON.stringify(max))
+        localStorage.setItem('startValue', JSON.stringify(start))
         setIsChangeValue(!isChangeValue)
     }
 
     return (
         <div className='block'>
             {!isChangeValue
-                ? <Board num={numBoard} max={Number(maxValue)} />
-                : <Setting max={maxValue} start={startValue} setMaxValue={fSetMaxValue} setStartValue={fSetStartValue} isAprove />
+                ? <Board num={current} max={max} />
+                : <Setting max={max} start={start} setMaxValue={fSetMaxValue} setStartValue={fSetStartValue} isAprove />
             }
 
             <div className='block btn'>
                 {!isChangeValue &&
                     <>
                         <Button title='inc' onClick={fAddCounter} disabled={numBoardMax} />
-                        <Button title='reset' onClick={fResetCounter} disabled={numBoard === Number(startValue)} />
+                        <Button title='reset' onClick={fResetCounter} disabled={current === start} />
                     </>
                 }
                 <Button title='set' onClick={fSaveNewValue} disabled={isAprove} />

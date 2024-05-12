@@ -1,19 +1,19 @@
 import React, { ChangeEvent } from 'react';
 
 type SettingPropsType = {
-    max: string
-    start: string
-    setMaxValue: (value: string) => void
-    setStartValue: (value: string) => void
+    max: number
+    start: number
+    setMaxValue: (value: number) => void
+    setStartValue: (value: number) => void
     isAprove: boolean
 }
 
 export const Setting = (props: SettingPropsType) => {
     function onChangeMax(e: ChangeEvent<HTMLInputElement>) {
-        props.setMaxValue(e.currentTarget.value)
+        props.setMaxValue(+e.currentTarget.value)
     }
     function onChangeStart(e: ChangeEvent<HTMLInputElement>) {
-        props.setStartValue(e.currentTarget.value)
+        props.setStartValue(+e.currentTarget.value)
     }
 
     return (
@@ -26,7 +26,7 @@ export const Setting = (props: SettingPropsType) => {
                     id="max"
                     value={props.max}
                     onChange={(e) => onChangeMax(e)}
-                    style={Number(props.max) < 0 || Number(props.max) <= Number(props.start) ? { border: "2px solid crimson", backgroundColor: "#f4899d" } : {}}
+                    style={props.max < 0 || props.max <= props.start ? { border: "2px solid crimson", backgroundColor: "#f4899d" } : {}}
                 />
             </div>
             <div className='option'>
@@ -37,7 +37,7 @@ export const Setting = (props: SettingPropsType) => {
                     id="start"
                     value={props.start}
                     onChange={(e) => onChangeStart(e)}
-                    style={Number(props.start) < 0 || Number(props.max) <= Number(props.start) ? { border: "2px solid crimson", backgroundColor: "#f4899d" } : {}}
+                    style={props.start < 0 || props.max <= props.start ? { border: "2px solid crimson", backgroundColor: "#f4899d" } : {}}
                 />
             </div>
         </div>
