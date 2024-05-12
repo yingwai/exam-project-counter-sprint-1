@@ -1,25 +1,60 @@
 import React, { useState } from 'react';
 import { Board } from './Board';
 import { Button } from './Button';
+import { Setting } from './Setting';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppRootStateType } from '../state/store';
+import { appendCounterAC, resetCounterAC, setMaxCounterAC, setStartCounterAC } from '../state/counterReducer';
 
-export const Counter = () => {
-    let [numBoard, setNumBoard] = useState<number>(0);
+export const Counter = () => {    
+    const [isChangeValue, setIsChangeValue] = useState(false)
 
-    const numBoardMax = numBoard >= 5;
+    const {start, max, current} = useSelector((state: AppRootStateType) => state.counter);    
+    const dispatch = useDispatch()
 
-    function fAddCount() {
-        if (numBoardMax) return;
+    const numBoardMax = current >= max;
 
-        setNumBoard(++numBoard)
+    function fAddCounter() {
+        dispatch(appendCounterAC())
+    }
+
+    function fResetCounter() {
+        dispatch(resetCounterAC())
+    }
+
+    function fSetMaxValue(value: number) {
+        dispatch(setMaxCounterAC(value))
+    }
+
+    function fSetStartValue(value: number) {
+        dispatch(setStartCounterAC(value))
+    }
+
+    const isAprove = max < 0 || max <= start;
+
+    function fSaveNewValue() {
+        if (isAprove) return
+
+        localStorage.setItem('maxValue', JSON.stringify(max))
+        localStorage.setItem('startValue', JSON.stringify(start))
+        setIsChangeValue(!isChangeValue)
     }
 
     return (
         <div className='block'>
-            <Board num={numBoard} />
+            {!isChangeValue
+                ? <Board num={current} max={max} />
+                : <Setting max={max} start={start} setMaxValue={fSetMaxValue} setStartValue={fSetStartValue} isAprove />
+            }
 
             <div className='block btn'>
-                <Button title='inc' onClick={() => fAddCount()} disabled={numBoardMax} />
-                <Button title='reset' onClick={() => setNumBoard(0)} disabled={numBoard === 0} />
+                {!isChangeValue &&
+                    <>
+                        <Button title='inc' onClick={fAddCounter} disabled={numBoardMax} />
+                        <Button title='reset' onClick={fResetCounter} disabled={current === start} />
+                    </>
+                }
+                <Button title='set' onClick={fSaveNewValue} disabled={isAprove} />
             </div>
         </div>
     );
