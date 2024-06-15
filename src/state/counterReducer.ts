@@ -1,3 +1,6 @@
+import { Dispatch } from "redux";
+import { AppRootStateType } from "./store";
+
 export type CounterStateType = {
     start: number
     max: number
@@ -6,7 +9,7 @@ export type CounterStateType = {
 
 type ActionsCounterType = appendCounterType
     | resetCounterType
-    | setMaxCounterType 
+    | setMaxCounterType
     | setStartCounterType;
 
 type appendCounterType = ReturnType<typeof appendCounterAC>;
@@ -29,15 +32,24 @@ export function counterReducer(state = initCounterState, action: ActionsCounterT
         case "RESET":
             return { ...state, current: state.start }
         case "SET-MAX":
-            return {...state, max: action.value}
+            return { ...state, max: action.value }
         case "SET-START":
-            return {...state, start: action.value, current: action.value}
+            return { ...state, start: action.value, current: action.value }
         default:
             return state;
     }
 }
 
-export function appendCounterAC() { return { type: 'APPEND' } as const }
-export function resetCounterAC() { return { type: 'RESET' } as const }
-export function setMaxCounterAC(value: number) { return { type: 'SET-MAX', value } as const }
-export function setStartCounterAC(value: number) { return { type: 'SET-START', value } as const }
+export const appendCounterAC = () => { return { type: 'APPEND' } as const }
+export const resetCounterAC = () => { return { type: 'RESET' } as const }
+export const setMaxCounterAC = (value: number) => { return { type: 'SET-MAX', value } as const }
+export const setStartCounterAC = (value: number) => { return { type: 'SET-START', value } as const }
+
+export const getLocalstorageValueTC = () => (dispatch: Dispatch) => {
+    dispatch(setStartCounterAC(JSON.parse(localStorage.getItem('startValue')!)))
+    dispatch(setMaxCounterAC(JSON.parse(localStorage.getItem('maxValue')!)))
+}
+export const saveLocalstorageValueTC = () => (dispatch: Dispatch, getState: () => AppRootStateType) => {
+    localStorage.setItem('maxValue', JSON.stringify(getState().counter.max))
+    localStorage.setItem('startValue', JSON.stringify(getState().counter.start))
+}

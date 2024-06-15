@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Board } from './Board';
 import { Button } from './Button';
 import { Setting } from './Setting';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppRootStateType } from '../state/store';
-import { appendCounterAC, resetCounterAC, setMaxCounterAC, setStartCounterAC } from '../state/counterReducer';
+import { useSelector } from 'react-redux';
+import { AppRootStateType, useAppDisspatch } from '../state/store';
+import { appendCounterAC, getLocalstorageValueTC, resetCounterAC, saveLocalstorageValueTC, setMaxCounterAC, setStartCounterAC } from '../state/counterReducer';
 
-export const Counter = () => {    
+export const Counter = () => {
     const [isChangeValue, setIsChangeValue] = useState(false)
 
-    const {start, max, current} = useSelector((state: AppRootStateType) => state.counter);    
-    const dispatch = useDispatch()
+    const { start, max, current } = useSelector((state: AppRootStateType) => state.counter);
+    const dispatch = useAppDisspatch()
+
+    useEffect(() => {
+        dispatch(getLocalstorageValueTC())
+    }, [dispatch])
 
     const numBoardMax = current >= max;
 
@@ -35,8 +39,7 @@ export const Counter = () => {
     function fSaveNewValue() {
         if (isAprove) return
 
-        localStorage.setItem('maxValue', JSON.stringify(max))
-        localStorage.setItem('startValue', JSON.stringify(start))
+        dispatch(saveLocalstorageValueTC())
         setIsChangeValue(!isChangeValue)
     }
 
